@@ -4,7 +4,7 @@ const express = require('express');
 
 let app = express();
 
-app.use('/', express.static('diarios-frontend/build'));
+app.use('/', express.static('build'));
 
 app.get('/',(req, res)=>{
 	res.send('Hello world');
