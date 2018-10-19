@@ -1,9 +1,9 @@
 let {User} = require('./../db/models/user');
 
-let authenticate = (req, res, next) => {
-	let token = req.header('final-x-auth');
+let socialAuthenticate = (req, res, next) => {
+	let token = req.header('social-x-auth');
 
-	User.findByFinalToken(token).then((user) => {
+	User.findBySocialToken(token).then((user) => {
 		if(!user){
 			return Promise.reject();
 		}
@@ -15,4 +15,4 @@ let authenticate = (req, res, next) => {
 	});
 };
 
-module.exports = {authenticate};
+module.exports = {socialAuthenticate};
