@@ -29,7 +29,7 @@ let UserSchema = new mongoose.Schema({
 		minlenght: 6,
 		required: true
 	},
-	socialId: {
+	social_id: {
 		type: String,
 		minlenght: 6,
 		required: true

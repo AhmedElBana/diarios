@@ -2,6 +2,7 @@ require('./config/config');
 const fs = require('fs');
 const _ = require('lodash');
 const bodyParser = require('body-parser');
+const axios = require('axios');
 const express = require('express');
 let app = express();
 app.use(bodyParser.json());
@@ -30,7 +31,7 @@ app.use((req, res, next)=>{
 //--------------------------- start apis section ----------------------------
 app.post('/user/create',(req,res) => {
 	console.log('---------------------');
-	let body = _.pick(req.body, ['userName','email','password','socialId','pic']);
+	let body = _.pick(req.body, ['userName','email','password','social_id','pic']);
 	let userData = new User(body);
 	console.log(userData);
 
@@ -41,16 +42,29 @@ app.post('/user/create',(req,res) => {
 	});
 });
 app.post('/login/social', (req, res)=>{
-	var body = _.pick(req.body, ['social_id']);
+	var body = _.pick(req.body, ['social_id','fb_token']);
 	let selectedUser ;
-	User.findOne({ 'social_id': body.social_id }).then((user) => {
-		selectedUser = user;
-		return user.generateSocialAuthToken();
-	}).then((token)=>{
-		res.header('social-x-auth', token).send(selectedUser);
-	}).catch((e)=>{
-		res.status(400).send(e);
-	});
+    axios.get('https://graph.facebook.com/v3.1/' + body.social_id + '?access_token=' + body.fb_token)
+      .then(response => {
+      	if(response.status == 200){
+      		console.log(response.data);
+      		User.findOne({ 'social_id': body.social_id }).then((user) => {
+				selectedUser = user;
+				console.log(body.social_id);
+				console.log(user);
+				return user.generateSocialAuthToken();
+			}).then((token)=>{
+				res.header('social-x-auth', token).send(selectedUser);
+			}).catch((e)=>{
+				res.status(400).send(e);
+			});
+      	}else{
+      		res.status(400).send({"error": "error in facebook authentication."});
+      	}
+	  })
+	  .catch(error => {
+	    res.status(400).send(error);
+	  });
 });
 app.post('/login/auth',socialAuthenticate , (req, res)=>{
 	var body = _.pick(req.body, ['email','password']);
